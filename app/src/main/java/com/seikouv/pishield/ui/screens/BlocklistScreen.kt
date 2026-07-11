@@ -35,6 +35,7 @@ import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.patrykandpatrick.vico.compose.chart.line.lineSpec
+import com.patrykandpatrick.vico.compose.chart.scroll.rememberChartScrollSpec
 import com.patrykandpatrick.vico.compose.m3.style.m3ChartStyle
 import com.patrykandpatrick.vico.compose.style.ProvideChartStyle
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
@@ -179,6 +180,7 @@ fun BlocklistLineChart(history: List<BlocklistHistoryPoint>) {
                         guideline = null,
                         valueFormatter = { _, _ -> "" } // timestamps aren't meaningful per-point, hide labels
                     ),
+                    chartScrollSpec = rememberChartScrollSpec(isScrollEnabled = false),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(12.dp)

@@ -24,7 +24,7 @@ class BlocklistViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(BlocklistUiState())
     val uiState: StateFlow<BlocklistUiState> = _uiState
 
-    private val maxHistoryPoints = 60
+    private val maxHistoryPoints = 15
     private var pollingStarted = false
 
     init {
@@ -57,7 +57,7 @@ class BlocklistViewModel : ViewModel() {
         viewModelScope.launch {
             while (true) {
                 try {
-                    val stats = api.getBlocklistStats(windowSeconds = 60)
+                    val stats = api.getBlocklistStats(windowSeconds = 10)
                     val newPoint = BlocklistHistoryPoint(
                         timestamp = System.currentTimeMillis(),
                         adsCount = stats.ads,
