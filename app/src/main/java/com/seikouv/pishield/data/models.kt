@@ -101,3 +101,15 @@ data class BlocklistHistoryPoint(
     val trackingCount: Int,
     val aiCount: Int
 )
+
+// DNS log entry (from /api/dns/logs)
+data class DnsLogEntry(
+    val id: Long,
+    val timestamp: String,
+    val domain: String,
+    @SerializedName("client_ip")
+    val clientIp: String,
+    val blocked: Boolean,
+    val category: String?,
+    val epoch: Long?
+)

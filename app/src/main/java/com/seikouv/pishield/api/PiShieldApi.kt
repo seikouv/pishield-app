@@ -54,8 +54,10 @@ interface PiShieldApi {
     @GET("/api/dns/logs")
     suspend fun getDnsLogs(
         @Query("limit") limit: Int = 100,
-        @Query("offset") offset: Int = 0
-    ): List<Map<String, Any>>
+        @Query("offset") offset: Int = 0,
+        @Query("blocked") blocked: Boolean? = null,
+        @Query("category") category: String? = null
+    ): List<DnsLogEntry>
 
     // Schedule
     @GET("/api/schedule")

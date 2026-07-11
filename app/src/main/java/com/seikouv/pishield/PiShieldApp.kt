@@ -1,5 +1,6 @@
 package com.seikouv.pishield
-
+import com.seikouv.pishield.ui.screens.DnsLogScreen
+import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dashboard
@@ -51,6 +52,12 @@ fun PiShieldApp() {
                     selected = selectedTab.intValue == 3,
                     onClick = { selectedTab.intValue = 3 }
                 )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Terminal, contentDescription = null) },
+                    label = { Text("DNS Logs") },
+                    selected = selectedTab.intValue == 4,
+                    onClick = { selectedTab.intValue = 4 }
+                )
             }
         }
     ) { padding ->
@@ -59,6 +66,7 @@ fun PiShieldApp() {
             1 -> DeviceScreen(modifier = Modifier.padding(padding))
             2 -> BlocklistScreen(modifier = Modifier.padding(padding))
             3 -> SettingsScreen(modifier = Modifier.padding(padding))
+            4 -> DnsLogScreen(modifier = Modifier.padding(padding))
         }
     }
 }
