@@ -47,6 +47,15 @@ interface PiShieldApi {
     @DELETE("/api/blocklists/custom/{domain}")
     suspend fun deleteCustomBlocklist(@Path("domain") domain: String): ApiResponse
 
+    @GET("/api/blocklists/whitelist")
+    suspend fun getWhitelist(): List<String>
+
+    @POST("/api/blocklists/whitelist")
+    suspend fun addWhitelist(@Body domain: Map<String, String>): ApiResponse
+
+    @DELETE("/api/blocklists/whitelist/{domain}")
+    suspend fun deleteWhitelist(@Path("domain") domain: String): ApiResponse
+
     @POST("/api/blocklists/update")
     suspend fun updateBlocklists(): ApiResponse
 

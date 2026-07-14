@@ -16,7 +16,11 @@ data class BlocklistUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val toggledCategory: String? = null,
-    val toggleError: String? = null
+    val toggleError: String? = null,
+    val whitelist: List<String> = emptyList(),
+    val blacklist: List<String> = emptyList(),
+    val listActionError: String? = null,
+    val isListActionInProgress: Boolean = false
 )
 
 class BlocklistViewModel : ViewModel() {
@@ -30,6 +34,8 @@ class BlocklistViewModel : ViewModel() {
     init {
         fetchBlocklists()
         startStatsPolling()
+        fetchWhitelist()
+        fetchBlacklist()
     }
 
     fun fetchBlocklists() {
@@ -95,6 +101,83 @@ class BlocklistViewModel : ViewModel() {
                     toggledCategory = null,
                     toggleError = "Failed to toggle $category: ${e.message}"
                 )
+            }
+        }
+    }
+    fun fetchWhitelist() {
+        viewModelScope.launch {
+            try {
+                val list = api.getWhitelist()
+                _uiState.value = _uiState.value.copy(whitelist = list)
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(listActionError = "Failed to load whitelist: ${e.message}")
+            }
+        }
+    }
+
+    fun fetchBlacklist() {
+        viewModelScope.launch {
+            try {
+                val list = api.getCustomBlocklist()
+                _uiState.value = _uiState.value.copy(blacklist = list)
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(listActionError = "Failed to load blacklist: ${e.message}")
+            }
+        }
+    }
+
+    fun addToWhitelist(domain: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isListActionInProgress = true, listActionError = null)
+            try {
+                api.addWhitelist(mapOf("domain" to domain))
+                fetchWhitelist()
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(listActionError = "Failed to add $domain: ${e.message}")
+            } finally {
+                _uiState.value = _uiState.value.copy(isListActionInProgress = false)
+            }
+        }
+    }
+
+    fun removeFromWhitelist(domain: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isListActionInProgress = true, listActionError = null)
+            try {
+                api.deleteWhitelist(domain)
+                fetchWhitelist()
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(listActionError = "Failed to remove $domain: ${e.message}")
+            } finally {
+                _uiState.value = _uiState.value.copy(isListActionInProgress = false)
+            }
+        }
+    }
+
+    fun addToBlacklist(domain: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isListActionInProgress = true, listActionError = null)
+            try {
+                api.addCustomBlocklist(mapOf("domain" to domain))
+                fetchBlacklist()
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(listActionError = "Failed to add $domain: ${e.message}")
+            } finally {
+                _uiState.value = _uiState.value.copy(isListActionInProgress = false)
+            }
+        }
+    }
+
+    fun removeFromBlacklist(domain: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isListActionInProgress = true, listActionError = null)
+            try {
+                api.deleteCustomBlocklist(domain)
+                fetchBlacklist()
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(listActionError = "Failed to remove $domain: ${e.message}")
+            } finally {
+                _uiState.value = _uiState.value.copy(isListActionInProgress = false)
             }
         }
     }

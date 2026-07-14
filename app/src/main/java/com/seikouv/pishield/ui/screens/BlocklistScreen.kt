@@ -1,10 +1,18 @@
 package com.seikouv.pishield.ui.screens
 
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Button
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -98,7 +106,39 @@ fun BlocklistScreen(
         LegendRow()
 
         Spacer(modifier = Modifier.height(24.dp))
+        DomainListSection(
+            title = "Whitelist",
+            domains = state.whitelist,
+            onAdd = { viewModel.addToWhitelist(it) },
+            onRemove = { viewModel.removeFromWhitelist(it) }
+        )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        DomainListSection(
+            title = "Blacklist",
+            domains = state.blacklist,
+            onAdd = { viewModel.addToBlacklist(it) },
+            onRemove = { viewModel.removeFromBlacklist(it) }
+        )
+
+        if (state.listActionError != null) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF5F2C2C))
+            ) {
+                Text(
+                    state.listActionError ?: "",
+                    modifier = Modifier.padding(12.dp),
+                    color = Color(0xFFFFCDD2),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
         if (state.blocklists.isNotEmpty()) {
             // Blocklist Items
             Text(
@@ -256,6 +296,78 @@ fun BlocklistCard(
                 enabled = false, // Disabled until backend permission issue is fixed
                 modifier = Modifier.width(50.dp)
             )
+        }
+    }
+}
+@Composable
+fun DomainListSection(
+    title: String,
+    domains: List<String>,
+    onAdd: (String) -> Unit,
+    onRemove: (String) -> Unit
+) {
+    var inputText by remember { mutableStateOf("") }
+
+    Column {
+        Text(
+            title,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = inputText,
+                onValueChange = { inputText = it },
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("e.g. example.com") },
+                singleLine = true
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(onClick = {
+                if (inputText.isNotBlank()) {
+                    onAdd(inputText.trim())
+                    inputText = ""
+                }
+            }) {
+                Text("Add")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (domains.isEmpty()) {
+            Text(
+                "No domains added",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color(0xFF9CA3AF),
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
+        } else {
+            domains.forEach { domain ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 3.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF111827))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(domain, color = Color.White, style = MaterialTheme.typography.bodyMedium)
+                        IconButton(onClick = { onRemove(domain) }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Remove", tint = Color(0xFFFF6B6B))
+                        }
+                    }
+                }
+            }
         }
     }
 }
