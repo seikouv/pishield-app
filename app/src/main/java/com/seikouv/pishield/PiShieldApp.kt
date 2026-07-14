@@ -1,4 +1,5 @@
 package com.seikouv.pishield
+import com.seikouv.pishield.ui.screens.ThreatsScreen
 import com.seikouv.pishield.ui.screens.DnsLogScreen
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.foundation.layout.padding
@@ -14,6 +15,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.seikouv.pishield.ui.screens.DashboardScreen
@@ -47,17 +49,24 @@ fun PiShieldApp() {
                     onClick = { selectedTab.intValue = 2 }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    label = { Text("Settings") },
+                    icon = { Icon(Icons.Default.Warning, contentDescription = null) },
+                    label = { Text("Threats") },
                     selected = selectedTab.intValue == 3,
                     onClick = { selectedTab.intValue = 3 }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Terminal, contentDescription = null) },
-                    label = { Text("DNS Logs") },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                    label = { Text("Settings") },
                     selected = selectedTab.intValue == 4,
                     onClick = { selectedTab.intValue = 4 }
                 )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Terminal, contentDescription = null) },
+                    label = { Text("DNS Logs") },
+                    selected = selectedTab.intValue == 5,
+                    onClick = { selectedTab.intValue = 5 }
+                )
+
             }
         }
     ) { padding ->
@@ -65,8 +74,9 @@ fun PiShieldApp() {
             0 -> DashboardScreen(modifier = Modifier.padding(padding))
             1 -> DeviceScreen(modifier = Modifier.padding(padding))
             2 -> BlocklistScreen(modifier = Modifier.padding(padding))
-            3 -> SettingsScreen(modifier = Modifier.padding(padding))
-            4 -> DnsLogScreen(modifier = Modifier.padding(padding))
+            3 -> ThreatsScreen(modifier = Modifier.padding(padding))
+            4 -> SettingsScreen(modifier = Modifier.padding(padding))
+            5 -> DnsLogScreen(modifier = Modifier.padding(padding))
         }
     }
 }

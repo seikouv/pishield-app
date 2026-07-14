@@ -22,7 +22,6 @@ data class DashboardResponse(
 
 // Device
 data class Device(
-    val id: String,
     val mac: String,
     val ip: String,
     val hostname: String?,
@@ -42,13 +41,15 @@ data class Blocklist(
 
 // Threat/Alert
 data class Threat(
-    val id: String,
+    val id: Int,
     val timestamp: String,
-    val source_ip: String,
-    val destination_ip: String,
-    val threat_type: String,
-    val severity: String, // "low", "medium", "high"
-    val description: String,
+    @SerializedName("src_ip")
+    val srcIp: String,
+    @SerializedName("dst_ip")
+    val dstIp: String,
+    @SerializedName("threat_type")
+    val threatType: String,
+    val detail: String,
     val blocked: Boolean
 )
 

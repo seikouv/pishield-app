@@ -81,4 +81,17 @@ interface PiShieldApi {
 
     @POST("/api/system/restart/{service}")
     suspend fun restartService(@Path("service") service: String): ApiResponse
+
+    @GET("/api/threats")
+    suspend fun getThreats(
+        @Query("threat_type") threatType: String? = null,
+        @Query("limit") limit: Int = 50,
+        @Query("offset") offset: Int = 0
+    ): List<Threat>
+
+    @DELETE("/api/threats/{id}")
+    suspend fun deleteThreat(@Path("id") id: Int): ApiResponse
+
+    @DELETE("/api/threats")
+    suspend fun clearAllThreats(): ApiResponse
 }
