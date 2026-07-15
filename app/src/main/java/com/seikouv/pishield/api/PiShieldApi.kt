@@ -11,6 +11,7 @@ interface PiShieldApi {
     // Threats
     @GET("/api/threats")
     suspend fun getThreats(
+        @Query("threat_type") threatType: String? = null,
         @Query("limit") limit: Int = 100,
         @Query("offset") offset: Int = 0
     ): List<Threat>
@@ -22,7 +23,7 @@ interface PiShieldApi {
     @POST("/api/devices/{mac}/block")
     suspend fun blockDevice(@Path("mac") mac: String): ApiResponse
 
-    @POST("/api/devices/{mac}/unblock")
+    @DELETE("/api/devices/{mac}/block")
     suspend fun unblockDevice(@Path("mac") mac: String): ApiResponse
 
     @GET("/api/devices/{mac}/threats")
@@ -81,13 +82,6 @@ interface PiShieldApi {
 
     @POST("/api/system/restart/{service}")
     suspend fun restartService(@Path("service") service: String): ApiResponse
-
-    @GET("/api/threats")
-    suspend fun getThreats(
-        @Query("threat_type") threatType: String? = null,
-        @Query("limit") limit: Int = 50,
-        @Query("offset") offset: Int = 0
-    ): List<Threat>
 
     @DELETE("/api/threats/{id}")
     suspend fun deleteThreat(@Path("id") id: Int): ApiResponse

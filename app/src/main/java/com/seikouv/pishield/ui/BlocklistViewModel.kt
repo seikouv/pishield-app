@@ -12,7 +12,6 @@ import kotlinx.coroutines.delay
 
 data class BlocklistUiState(
     val blocklists: List<Blocklist> = emptyList(),
-    val history: List<BlocklistHistoryPoint> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val toggledCategory: String? = null,
@@ -27,6 +26,12 @@ class BlocklistViewModel : ViewModel() {
     private val api = RetrofitClient.api
     private val _uiState = MutableStateFlow(BlocklistUiState())
     val uiState: StateFlow<BlocklistUiState> = _uiState
+
+    // History lives in its own StateFlow now. The chart is the only thing
+    // that reads this, so the 5s poll no longer recomposes the whole screen
+    // (domain lists, blocklist cards, etc).
+    private val _history = MutableStateFlow<List<BlocklistHistoryPoint>>(emptyList())
+    val history: StateFlow<List<BlocklistHistoryPoint>> = _history
 
     private val maxHistoryPoints = 15
     private var pollingStarted = false
@@ -70,13 +75,13 @@ class BlocklistViewModel : ViewModel() {
                         trackingCount = stats.tracking,
                         aiCount = stats.ai
                     )
-                    val updatedHistory = (_uiState.value.history + newPoint)
-                        .takeLast(maxHistoryPoints)
+                    _history.value = (_history.value + newPoint).takeLast(maxHistoryPoints)
 
-                    _uiState.value = _uiState.value.copy(
-                        history = updatedHistory,
-                        error = null
-                    )
+                    // Only clear a stale error here, don't touch anything else
+                    // in uiState so this poll can't trigger a full-screen recompose.
+                    if (_uiState.value.error != null) {
+                        _uiState.value = _uiState.value.copy(error = null)
+                    }
                 } catch (e: Exception) {
                     // Don't wipe existing history/graph on a transient failure,
                     // just surface the error.
