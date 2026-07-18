@@ -96,7 +96,7 @@ fun DeviceScreen(viewModel: DeviceViewModel = viewModel(), modifier: Modifier = 
                 }
             }
             is DeviceState.Success -> {
-                val activeDevices = state.devices.filter { isDeviceActive(it.lastSeen) }
+                val activeDevices = state.devices.filter { it.lastSeen >= cutoffTimestamp(state.devices) }
 
                 if (activeDevices.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -191,14 +191,15 @@ fun DeviceCard(
     }
 }
 
-fun isDeviceActive(lastSeen: String): Boolean {
+fun cutoffTimestamp(devices: List<Device>): String {
+    if (devices.isEmpty()) return ""
+    val newest = devices.maxOf { it.lastSeen }
     return try {
         val formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-        val lastSeenTime = java.time.LocalDateTime.parse(lastSeen, formatter)
-        val now = java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Kolkata")).toLocalDateTime()
-        val secondsAgo = java.time.temporal.ChronoUnit.SECONDS.between(lastSeenTime, now)
-        secondsAgo < 3600  // Active if seen in last 1 hour
+        val newestTime = java.time.LocalDateTime.parse(newest.trim(), formatter)
+        val cutoff = newestTime.minusHours(1)
+        cutoff.format(formatter)
     } catch (e: Exception) {
-        false
+        ""  // fail-safe: cutoff of "" means everything passes the >= check
     }
 }

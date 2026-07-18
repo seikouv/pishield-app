@@ -80,4 +80,5 @@ dependencies {
     // Charts
     implementation("com.patrykandpatrick.vico:compose:1.13.1")
     implementation("com.patrykandpatrick.vico:compose-m3:1.13.1")
+    implementation("androidx.security:security-crypto:1.1.0")
 }
