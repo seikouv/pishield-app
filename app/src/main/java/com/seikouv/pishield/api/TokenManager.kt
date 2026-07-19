@@ -8,7 +8,6 @@ import androidx.security.crypto.MasterKey
 object TokenManager {
     private const val PREFS_NAME = "pishield_secure_prefs"
     private const val KEY_API_TOKEN = "api_token"
-    private const val DEFAULT_TOKEN = "6e7ab2a33e3805aac91a9d17b13fdd354feb72bad67eda8a75623b96f2873a16"
 
     private fun getEncryptedPrefs(context: Context) = EncryptedSharedPreferences.create(
         context,
@@ -20,20 +19,16 @@ object TokenManager {
 
     fun saveToken(context: Context, token: String) {
         getEncryptedPrefs(context).edit {
-            putString(KEY_API_TOKEN, token)
+            putString(KEY_API_TOKEN, token.trim())
         }
     }
 
-    fun getToken(context: Context): String {
-        val prefs = getEncryptedPrefs(context)
-        var token = prefs.getString(KEY_API_TOKEN, null)
-        
-        if (token == null) {
-            token = DEFAULT_TOKEN
-            saveToken(context, token)
-        }
-        
-        return token
+    fun getToken(context: Context): String? {
+        return getEncryptedPrefs(context).getString(KEY_API_TOKEN, null)
+    }
+
+    fun hasToken(context: Context): Boolean {
+        return !getToken(context).isNullOrBlank()
     }
 
     fun clearToken(context: Context) {

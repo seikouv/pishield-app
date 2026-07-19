@@ -6,9 +6,15 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.seikouv.pishield.ui.theme.PiShieldTheme
 import com.seikouv.pishield.api.RetrofitClient
+import com.seikouv.pishield.api.TokenManager
+import com.seikouv.pishield.ui.screens.TokenEntryScreen
+import com.seikouv.pishield.ui.theme.PiShieldTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,7 +23,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             PiShieldTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    PiShieldApp()
+                    var tokenReady by remember { mutableStateOf(TokenManager.hasToken(this)) }
+
+                    if (tokenReady) {
+                        PiShieldApp()
+                    } else {
+                        TokenEntryScreen(onTokenSaved = { tokenReady = true })
+                    }
                 }
             }
         }
