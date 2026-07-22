@@ -41,8 +41,8 @@ fun DnsLogScreen(modifier: Modifier = Modifier, viewModel: DnsLogViewModel = vie
     val accentColor by ThemeState.accentColor.collectAsState()
 
     val bg = if (isDark) DarkColors.TerminalBg else LightColors.TerminalBg
-    val amber = accentColor
-    val amberDim = accentColor.copy(alpha = 0.6f)
+    val accent = accentColor
+    val accentDim = accentColor.copy(alpha = 0.6f)
     val logBg = if (isDark) Color.Black else LightColors.GlassFill
 
     val listState = rememberLazyListState()
@@ -67,7 +67,7 @@ fun DnsLogScreen(modifier: Modifier = Modifier, viewModel: DnsLogViewModel = vie
         ) {
             Text(
                 text = "DNS_LOGS.LOG",
-                color = amber,
+                color = accent,
                 fontFamily = FontFamily.Monospace,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -87,8 +87,8 @@ fun DnsLogScreen(modifier: Modifier = Modifier, viewModel: DnsLogViewModel = vie
                     label = filterOption.label,
                     selected = currentFilter == filterOption,
                     onClick = { viewModel.setFilter(filterOption) },
-                    amber = amber,
-                    amberDim = amberDim,
+                    accent = accent,
+                    accentDim = accentDim,
                     isDark = isDark
                 )
             }
@@ -102,13 +102,13 @@ fun DnsLogScreen(modifier: Modifier = Modifier, viewModel: DnsLogViewModel = vie
                 .padding(horizontal = 12.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(logBg)
-                .border(1.dp, amberDim, RoundedCornerShape(8.dp))
+                .border(1.dp, accentDim, RoundedCornerShape(8.dp))
                 .padding(12.dp)
         ) {
             if (entries.isEmpty()) {
                 Text(
                     text = if (isConnected) "waiting for traffic..." else "connection lost. retrying...",
-                    color = amberDim,
+                    color = accentDim,
                     fontFamily = FontFamily.Monospace,
                     fontSize = 13.sp,
                     modifier = Modifier.align(Alignment.Center)
@@ -120,7 +120,7 @@ fun DnsLogScreen(modifier: Modifier = Modifier, viewModel: DnsLogViewModel = vie
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     items(entries, key = { it.id }) { entry ->
-                        TerminalLogLine(entry, amber, amberDim)
+                        TerminalLogLine(entry, accent, accentDim)
                     }
                 }
             }
@@ -131,7 +131,7 @@ fun DnsLogScreen(modifier: Modifier = Modifier, viewModel: DnsLogViewModel = vie
 }
 
 @Composable
-private fun TerminalLogLine(entry: DnsLogEntry, amber: Color, amberDim: Color) {
+private fun TerminalLogLine(entry: DnsLogEntry, accent: Color, accentDim: Color) {
     // No per-row fade/expand animation - just render immediately.
     // With up to 300 live-updating entries, animating each new row was
     // the main source of lag.
@@ -151,14 +151,14 @@ private fun TerminalLogLine(entry: DnsLogEntry, amber: Color, amberDim: Color) {
     ) {
         Text(
             text = "[$timeLabel]",
-            color = amberDim,
+            color = accentDim,
             fontFamily = FontFamily.Monospace,
             fontSize = 12.sp
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = entry.domain,
-            color = if (entry.blocked) amber else amberDim,
+            color = if (entry.blocked) accent else accentDim,
             fontFamily = FontFamily.Monospace,
             fontSize = 12.sp,
             modifier = Modifier.weight(1f)
@@ -166,7 +166,7 @@ private fun TerminalLogLine(entry: DnsLogEntry, amber: Color, amberDim: Color) {
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = statusText,
-            color = if (entry.blocked) DarkColors.AlertRed else amberDim,
+            color = if (entry.blocked) DarkColors.AlertRed else accentDim,
             fontFamily = FontFamily.Monospace,
             fontSize = 12.sp,
             fontWeight = if (entry.blocked) FontWeight.Bold else FontWeight.Normal
@@ -175,17 +175,17 @@ private fun TerminalLogLine(entry: DnsLogEntry, amber: Color, amberDim: Color) {
 }
 
 @Composable
-private fun FilterChipItem(label: String, selected: Boolean, onClick: () -> Unit, amber: Color, amberDim: Color, isDark: Boolean) {
+private fun FilterChipItem(label: String, selected: Boolean, onClick: () -> Unit, accent: Color, accentDim: Color, isDark: Boolean) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
-            .background(if (selected) amber else (if (isDark) Color(0xFF1A1400) else Color(0xFFE5E7EB)))
+            .background(if (selected) accent else (if (isDark) Color(0xFF0F1E3D) else Color(0xFFE5E7EB)))
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
         Text(
             text = label,
-            color = if (selected) (if (isDark) Color.Black else Color.White) else amberDim,
+            color = if (selected) (if (isDark) Color.Black else Color.White) else accentDim,
             fontFamily = FontFamily.Monospace,
             fontSize = 12.sp,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal

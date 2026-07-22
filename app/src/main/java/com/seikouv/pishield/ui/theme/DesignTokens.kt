@@ -6,39 +6,39 @@ import androidx.compose.ui.unit.sp
 
 /**
  * PiShield Design Tokens
- * Single source of truth for colors, spacing, glass effect values, and typography.
+ * Single source of truth for colors, spacing, and typography.
  * Screens should reference these instead of hardcoding values.
  */
 
-// ---------- DARK THEME (amber terminal, default) ----------
+// ---------- DARK THEME (blue terminal, default) ----------
 object DarkColors {
-    val TerminalBg = Color(0xFF0A0A0A)
-    val AmberBright = Color(0xFFFFB000)
-    val AmberDim = Color(0xFFB37D00)
+    val TerminalBg = Color(0xFF0A1226)
+    val AccentBright = Color(0xFF4FA8E8)
+    val AccentDim = Color(0xFF2E6FA3)
     val AlertRed = Color(0xFFFF4500)
 
-    // Gradient background (subtle amber-tinted dark gradient)
-    val GradientStart = Color(0xFF0A0A0A)
-    val GradientEnd = Color(0xFF1A1206)
+    // Gradient background (subtle blue-tinted dark gradient)
+    val GradientStart = Color(0xFF0A1226)
+    val GradientEnd = Color(0xFF0F1E3D)
 
-    val TextPrimary = Color(0xFFFFB000)
-    val TextSecondary = Color(0xFF8A6A2E)
+    val TextPrimary = Color(0xFF4FA8E8)
+    val TextSecondary = Color(0xFF6B8CAE)
 }
 
-// ---------- LIGHT THEME (placeholder, refine later) ----------
+// ---------- LIGHT THEME ----------
 object LightColors {
-    val TerminalBg = Color(0xFFF5F0E6)
-    val AmberBright = Color(0xFFB37200)
-    val AmberDim = Color(0xFFD9A441)
+    val TerminalBg = Color(0xFFEAF2FB)
+    val AccentBright = Color(0xFF1B5FA8)
+    val AccentDim = Color(0xFF5B8FC7)
     val AlertRed = Color(0xFFD1360F)
 
-    val GradientStart = Color(0xFFFDF8EE)
-    val GradientEnd = Color(0xFFEFE2C4)
+    val GradientStart = Color(0xFFEAF2FB)
+    val GradientEnd = Color(0xFFD1E3F6)
 
     val GlassFill = Color(0xFFFFFFFF)
 
-    val TextPrimary = Color(0xFF3A2A00)
-    val TextSecondary = Color(0xFF7A6440)
+    val TextPrimary = Color(0xFF12335C)
+    val TextSecondary = Color(0xFF4A6B8C)
 }
 
 // ---------- SPACING ----------

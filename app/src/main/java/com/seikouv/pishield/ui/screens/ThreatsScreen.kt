@@ -44,7 +44,7 @@ import com.seikouv.pishield.ui.theme.LightColors
 import com.seikouv.pishield.ui.theme.LiveIndicator
 import com.seikouv.pishield.ui.theme.ThemeState
 
-private val CardBg = Color(0xFF14110A)
+private val CardBg = Color(0xFF0F1E3D)
 private val ErrorBg = Color(0xFF5F2C2C)
 private val ErrorText = Color(0xFFFFCDD2)
 private val MutedText = Color(0xFF9CA3AF)
@@ -61,8 +61,8 @@ fun ThreatsScreen(
     val accentColor by ThemeState.accentColor.collectAsState()
 
     val bg = if (isDark) DarkColors.TerminalBg else LightColors.TerminalBg
-    val amber = accentColor
-    val amberDim = accentColor.copy(alpha = 0.6f)
+    val accent = accentColor
+    val accentDim = accentColor.copy(alpha = 0.6f)
     val cardBg = if (isDark) CardBg else LightColors.GlassFill
 
     Column(
@@ -80,7 +80,7 @@ fun ThreatsScreen(
         ) {
             Text(
                 text = "THREATS",
-                color = amber,
+                color = accent,
                 fontFamily = FontFamily.Monospace,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -89,11 +89,11 @@ fun ThreatsScreen(
                 LiveIndicator(isConnected = state.error == null, isDark = isDark)
                 Spacer(modifier = Modifier.width(8.dp))
                 IconButton(onClick = { viewModel.fetchThreats(isPullToRefresh = true) }) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = amber)
+                    Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = accent)
                 }
                 if (state.threats.isNotEmpty()) {
                     TextButton(onClick = { viewModel.clearAllThreats() }) {
-                        Text("Clear All", color = amberDim)
+                        Text("Clear All", color = accentDim)
                     }
                 }
             }
@@ -120,7 +120,7 @@ fun ThreatsScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    PiShieldLoader(color = amber)
+                    PiShieldLoader(color = accent)
                 }
             }
             state.threats.isEmpty() -> {
@@ -143,8 +143,8 @@ fun ThreatsScreen(
                             isDeleting = state.deletingId == threat.id,
                             onDelete = { viewModel.deleteThreat(threat.id) },
                             cardBg = cardBg,
-                            amber = amber,
-                            amberDim = amberDim
+                            accent = accent,
+                            accentDim = accentDim
                         )
                     }
                 }
@@ -159,8 +159,8 @@ fun ThreatCard(
     isDeleting: Boolean,
     onDelete: () -> Unit,
     cardBg: Color,
-    amber: Color,
-    amberDim: Color
+    accent: Color,
+    accentDim: Color
 ) {
     val severityColor = when (threat.threatType) {
         "PORT_SCAN", "SYN_FLOOD", "ICMP_FLOOD" -> DarkColors.AlertRed
@@ -173,7 +173,7 @@ fun ThreatCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .background(cardBg)
-            .border(1.dp, amberDim, RoundedCornerShape(8.dp))
+            .border(1.dp, accentDim, RoundedCornerShape(8.dp))
             .padding(12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -194,7 +194,7 @@ fun ThreatCard(
                 Text(
                     threat.threatType.replace("_", " "),
                     style = MaterialTheme.typography.titleSmall,
-                    color = amber
+                    color = accent
                 )
                 Text(threat.detail, style = MaterialTheme.typography.bodySmall, color = MutedText)
                 Text(
@@ -211,7 +211,7 @@ fun ThreatCard(
 
         if (isDeleting) {
             PiShieldLoader(
-                color = amber
+                color = accent
             )
         } else {
             IconButton(onClick = onDelete) {

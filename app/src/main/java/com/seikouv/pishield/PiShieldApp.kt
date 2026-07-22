@@ -2,6 +2,7 @@ package com.seikouv.pishield
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +19,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -53,6 +55,12 @@ private val navItems = listOf(
  */
 @Composable
 fun PiShieldApp() {
+    val systemIsDark = isSystemInDarkTheme()
+    
+    LaunchedEffect(systemIsDark) {
+        ThemeState.setDark(systemIsDark)
+    }
+
     val selectedTab = remember { mutableIntStateOf(0) }
     val isDark by ThemeState.isDark.collectAsState()
     val accentColor by ThemeState.accentColor.collectAsState()

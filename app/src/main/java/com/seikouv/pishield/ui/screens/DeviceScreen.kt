@@ -46,7 +46,7 @@ import com.seikouv.pishield.ui.theme.LightColors
 import com.seikouv.pishield.ui.theme.LiveIndicator
 import com.seikouv.pishield.ui.theme.ThemeState
 
-private val CardBg = Color(0xFF14110A)
+private val CardBg = Color(0xFF0F1E3D)
 private val MutedText = Color(0xFF9CA3AF)
 
 @Composable
@@ -56,8 +56,8 @@ fun DeviceScreen(viewModel: DeviceViewModel = viewModel(), modifier: Modifier = 
     val accentColor by ThemeState.accentColor.collectAsState()
 
     val bg = if (isDark) DarkColors.TerminalBg else LightColors.TerminalBg
-    val amber = accentColor
-    val amberDim = accentColor.copy(alpha = 0.6f)
+    val accent = accentColor
+    val accentDim = accentColor.copy(alpha = 0.6f)
     val cardBg = if (isDark) CardBg else LightColors.GlassFill
     val mutedText = if (isDark) MutedText else LightColors.TextSecondary
 
@@ -75,7 +75,7 @@ fun DeviceScreen(viewModel: DeviceViewModel = viewModel(), modifier: Modifier = 
         ) {
             Text(
                 text = "DEVICES",
-                color = amber,
+                color = accent,
                 fontFamily = FontFamily.Monospace,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -84,7 +84,7 @@ fun DeviceScreen(viewModel: DeviceViewModel = viewModel(), modifier: Modifier = 
                 LiveIndicator(isConnected = state !is DeviceState.Error, isDark = isDark)
                 Spacer(modifier = Modifier.width(8.dp))
                 IconButton(onClick = { viewModel.fetchDevices() }) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = amber)
+                    Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = accent)
                 }
             }
         }
@@ -92,7 +92,7 @@ fun DeviceScreen(viewModel: DeviceViewModel = viewModel(), modifier: Modifier = 
         when (state) {
             is DeviceState.Loading -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    PiShieldLoader(color = amber)
+                    PiShieldLoader(color = accent)
                 }
             }
             is DeviceState.Success -> {
@@ -116,8 +116,8 @@ fun DeviceScreen(viewModel: DeviceViewModel = viewModel(), modifier: Modifier = 
                                 onUnblock = { viewModel.unblockDevice(device.mac) },
                                 isDark = isDark,
                                 cardBg = cardBg,
-                                amber = amber,
-                                amberDim = amberDim,
+                                accent = accent,
+                                accentDim = accentDim,
                                 mutedText = mutedText
                             )
                         }
@@ -140,8 +140,8 @@ fun DeviceCard(
     onUnblock: () -> Unit,
     isDark: Boolean,
     cardBg: Color,
-    amber: Color,
-    amberDim: Color,
+    accent: Color,
+    accentDim: Color,
     mutedText: Color
 ) {
     Column(
@@ -149,14 +149,14 @@ fun DeviceCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .background(cardBg)
-            .border(1.dp, amberDim, RoundedCornerShape(8.dp))
+            .border(1.dp, accentDim, RoundedCornerShape(8.dp))
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Text(
             device.hostname ?: device.mac,
             style = MaterialTheme.typography.titleMedium,
-            color = amber
+            color = accent
         )
         Text(device.mac, style = MaterialTheme.typography.bodySmall, color = mutedText)
         Text(device.ip, style = MaterialTheme.typography.bodySmall, color = mutedText)
@@ -170,7 +170,7 @@ fun DeviceCard(
                 Button(
                     onClick = onUnblock,
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = amber)
+                    colors = ButtonDefaults.buttonColors(containerColor = accent)
                 ) {
                     Icon(Icons.Default.CheckCircle, contentDescription = null, tint = if (isDark) Color.Black else Color.White, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))

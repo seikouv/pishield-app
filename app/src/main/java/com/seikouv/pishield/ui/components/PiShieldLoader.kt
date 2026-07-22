@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun PiShieldLoader(
     modifier: Modifier = Modifier,
-    color: Color = Color(0xFFFFB000)
+    color: Color = Color(0xFF4FA8E8)
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "PiShieldLoader")
     

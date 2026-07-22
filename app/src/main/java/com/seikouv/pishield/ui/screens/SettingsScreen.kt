@@ -18,16 +18,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -38,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -57,7 +50,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
-private val CardBgDark = Color(0xFF14110A)
+private val CardBgDark = Color(0xFF0F1E3D)
 private val MutedTextDark = Color(0xFF9CA3AF)
 private const val GITHUB_URL = "https://github.com/seikouv/pishield"
 private const val SECRET_TAP_COUNT = 7
@@ -83,8 +76,8 @@ fun SettingsScreen(
     var showSecretGame by remember { mutableStateOf(false) }
 
     val bg = if (isDark) DarkColors.TerminalBg else LightColors.TerminalBg
-    val amber = accentColor
-    val amberDim = accentColor.copy(alpha = 0.6f)
+    val accent = accentColor
+    val accentDim = accentColor.copy(alpha = 0.6f)
     val cardBg = if (isDark) CardBgDark else LightColors.GlassFill
     val mutedText = if (isDark) MutedTextDark else LightColors.TextSecondary
 
@@ -102,21 +95,21 @@ fun SettingsScreen(
     ) {
         Text(
             "SETTINGS",
-            color = amber,
+            color = accent,
             fontFamily = FontFamily.Monospace,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
 
         // PiShield configuration info
-        InfoCard(title = "PiShield Configuration", amber = amber, cardBg = cardBg, border = amberDim) {
-            InfoRow("Pi IP", "192.168.4.1:8000", mutedText, amber)
-            InfoRow("Hostname", "sike", mutedText, amber)
-            InfoRow("SSH", "ssh yas@192.168.4.1", mutedText, amber)
+        InfoCard(title = "PiShield Configuration", accent = accent, cardBg = cardBg, border = accentDim) {
+            InfoRow("Pi IP", "192.168.4.1:8000", mutedText, accent)
+            InfoRow("Hostname", "sike", mutedText, accent)
+            InfoRow("SSH", "ssh yas@192.168.4.1", mutedText, accent)
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "View on GitHub",
-                color = amber,
+                color = accent,
                 style = MaterialTheme.typography.bodySmall,
                 textDecoration = TextDecoration.Underline,
                 modifier = Modifier.clickable {
@@ -125,58 +118,8 @@ fun SettingsScreen(
             )
         }
 
-        // Appearance toggle
-        InfoCard(title = "Appearance", amber = amber, cardBg = cardBg, border = amberDim) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    if (isDark) "Dark mode" else "Light mode",
-                    color = mutedText,
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Switch(
-                    checked = isDark,
-                    onCheckedChange = { ThemeState.setDark(it) },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = amber,
-                        checkedTrackColor = amberDim
-                    )
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("UI Accent Color", color = mutedText, style = MaterialTheme.typography.labelSmall)
-
-            Slider(
-                value = remember(accentColor) {
-                    val hsv = FloatArray(3)
-                    android.graphics.Color.colorToHSV(
-                        android.graphics.Color.argb(
-                            (accentColor.alpha * 255).toInt(),
-                            (accentColor.red * 255).toInt(),
-                            (accentColor.green * 255).toInt(),
-                            (accentColor.blue * 255).toInt()
-                        ),
-                        hsv
-                    )
-                    hsv[0] / 360f
-                },
-                onValueChange = { h ->
-                    val color = Color.hsv(h * 360f, 1f, 1f)
-                    ThemeState.setAccentColor(color)
-                },
-                colors = SliderDefaults.colors(
-                    thumbColor = amber,
-                    activeTrackColor = amberDim
-                )
-            )
-        }
-
         // Manual sync - only hits the Pi when tapped
-        InfoCard(title = "Raspberry Pi Health", amber = amber, cardBg = cardBg, border = amberDim) {
+        InfoCard(title = "Raspberry Pi Health", accent = accent, cardBg = cardBg, border = accentDim) {
             when (val s = syncState) {
                 null -> {
                     Text(
@@ -186,10 +129,10 @@ fun SettingsScreen(
                     )
                 }
                 is DashboardState.Success -> {
-                    InfoRow("Memory Usage", "%.1f%%".format(s.data.memory_percent), mutedText, amber)
-                    InfoRow("Active Connections", s.data.active_connections.toString(), mutedText, amber)
-                    InfoRow("Uptime", formatUptime(s.data.uptime_seconds), mutedText, amber)
-                    InfoRow("Threats (24h)", s.data.threat_count_24h.toString(), mutedText, amber)
+                    InfoRow("Memory Usage", "%.1f%%".format(s.data.memory_percent), mutedText, accent)
+                    InfoRow("Active Connections", s.data.active_connections.toString(), mutedText, accent)
+                    InfoRow("Uptime", formatUptime(s.data.uptime_seconds), mutedText, accent)
+                    InfoRow("Threats (24h)", s.data.threat_count_24h.toString(), mutedText, accent)
                 }
                 is DashboardState.Error -> {
                     Text(
@@ -199,7 +142,7 @@ fun SettingsScreen(
                     )
                 }
                 is DashboardState.Loading -> {
-                    PiShieldLoader(color = amber, modifier = Modifier.padding(vertical = 4.dp))
+                    PiShieldLoader(color = accent, modifier = Modifier.padding(vertical = 4.dp))
                 }
             }
         }
@@ -213,7 +156,7 @@ fun SettingsScreen(
                     isSyncing = false
                 }
             },
-            colors = ButtonDefaults.buttonColors(containerColor = amber)
+            colors = ButtonDefaults.buttonColors(containerColor = accent)
         ) {
             Text(if (isSyncing) "Syncing..." else "Sync with Pi", color = Color.Black)
         }
@@ -223,7 +166,7 @@ fun SettingsScreen(
         // Footer credit tag - tap it 7x within 3s to open the secret game
         Text(
             text = "Powered by LapMaster Game",
-            color = amberDim,
+            color = accentDim,
             fontFamily = FontFamily.Monospace,
             fontSize = 11.sp,
             textAlign = TextAlign.Center,
@@ -250,7 +193,7 @@ fun SettingsScreen(
 @Composable
 private fun InfoCard(
     title: String,
-    amber: Color,
+    accent: Color,
     cardBg: Color,
     border: Color,
     content: @Composable () -> Unit
@@ -264,19 +207,19 @@ private fun InfoCard(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(title, style = MaterialTheme.typography.titleMedium, color = amber)
+        Text(title, style = MaterialTheme.typography.titleMedium, color = accent)
         content()
     }
 }
 
 @Composable
-private fun InfoRow(label: String, value: String, mutedText: Color, amber: Color) {
+private fun InfoRow(label: String, value: String, mutedText: Color, accent: Color) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(label, style = MaterialTheme.typography.bodySmall, color = mutedText)
-        Text(value, style = MaterialTheme.typography.bodySmall, color = amber)
+        Text(value, style = MaterialTheme.typography.bodySmall, color = accent)
     }
 }
 

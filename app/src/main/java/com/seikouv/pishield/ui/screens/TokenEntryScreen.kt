@@ -40,7 +40,7 @@ fun TokenEntryScreen(onTokenSaved: () -> Unit) {
     ) {
         Text(
             "PISHIELD SETUP",
-            color = DarkColors.AmberBright,
+            color = DarkColors.AccentBright,
             fontFamily = FontFamily.Monospace,
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold

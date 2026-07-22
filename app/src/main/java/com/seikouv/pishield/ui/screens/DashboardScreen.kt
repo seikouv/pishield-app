@@ -27,7 +27,7 @@ import com.seikouv.pishield.ui.theme.LightColors
 import com.seikouv.pishield.ui.theme.LiveIndicator
 import com.seikouv.pishield.ui.theme.ThemeState
 
-private val CardBg = Color(0xFF14110A)
+private val CardBg = Color(0xFF0F1E3D)
 
 @Composable
 fun DashboardScreen(viewModel: DashboardViewModel = viewModel(), modifier: Modifier = Modifier) {
@@ -36,8 +36,8 @@ fun DashboardScreen(viewModel: DashboardViewModel = viewModel(), modifier: Modif
     val accentColor by ThemeState.accentColor.collectAsState()
 
     val bg = if (isDark) DarkColors.TerminalBg else LightColors.TerminalBg
-    val amber = accentColor
-    val amberDim = accentColor.copy(alpha = 0.6f)
+    val accent = accentColor
+    val accentDim = accentColor.copy(alpha = 0.6f)
 
     Column(
         modifier = modifier
@@ -54,7 +54,7 @@ fun DashboardScreen(viewModel: DashboardViewModel = viewModel(), modifier: Modif
         ) {
             Text(
                 text = "PISHIELD",
-                color = amber,
+                color = accent,
                 fontFamily = FontFamily.Monospace,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -63,7 +63,7 @@ fun DashboardScreen(viewModel: DashboardViewModel = viewModel(), modifier: Modif
                 LiveIndicator(isConnected = state !is DashboardState.Error, isDark = isDark)
                 Spacer(modifier = Modifier.width(12.dp))
                 IconButton(onClick = { viewModel.fetchDashboard() }) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = amber)
+                    Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = accent)
                 }
             }
         }
@@ -71,7 +71,7 @@ fun DashboardScreen(viewModel: DashboardViewModel = viewModel(), modifier: Modif
         when (state) {
             is DashboardState.Loading -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    PiShieldLoader(color = amber)
+                    PiShieldLoader(color = accent)
                 }
             }
             is DashboardState.Success -> {
@@ -121,7 +121,7 @@ fun DashboardScreen(viewModel: DashboardViewModel = viewModel(), modifier: Modif
 }
 
 @Composable
-fun StatCard(title: String, value: String, isAlert: Boolean = false, isDark: Boolean = true, accentColor: Color = DarkColors.AmberBright) {
+fun StatCard(title: String, value: String, isAlert: Boolean = false, isDark: Boolean = true, accentColor: Color = DarkColors.AccentBright) {
     val accent = if (isAlert) DarkColors.AlertRed else accentColor
     val cardBg = if (isDark) CardBg else LightColors.GlassFill
     val border = accentColor.copy(alpha = 0.4f)

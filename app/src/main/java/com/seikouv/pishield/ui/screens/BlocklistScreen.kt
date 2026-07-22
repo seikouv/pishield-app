@@ -63,8 +63,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// Flat amber palette, no alpha/blur/shadow
-private val CardBg = Color(0xFF14110A)
+// Flat blue palette, no alpha/blur/shadow
+private val CardBg = Color(0xFF0F1E3D)
 private val ErrorBg = Color(0xFF5F2C2C)
 private val ErrorText = Color(0xFFFFCDD2)
 private val MutedText = Color(0xFF9CA3AF)
@@ -80,9 +80,9 @@ fun BlocklistScreen(
     val accentColor by ThemeState.accentColor.collectAsState()
 
     val bg = if (isDark) DarkColors.TerminalBg else LightColors.TerminalBg
-    val amber = accentColor
-    val amberDim = accentColor.copy(alpha = 0.6f)
-    val cardBg = if (isDark) Color(0xFF14110A) else LightColors.GlassFill
+    val accent = accentColor
+    val accentDim = accentColor.copy(alpha = 0.6f)
+    val cardBg = if (isDark) Color(0xFF0F1E3D) else LightColors.GlassFill
     val mutedText = if (isDark) Color(0xFF9CA3AF) else LightColors.TextSecondary
 
     var whitelistInput by remember { mutableStateOf("") }
@@ -98,7 +98,7 @@ fun BlocklistScreen(
         item {
             Text(
                 "BLOCKLISTS",
-                color = amber,
+                color = accent,
                 fontFamily = FontFamily.Monospace,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
@@ -113,7 +113,7 @@ fun BlocklistScreen(
         if (state.isLoading) {
             item {
                 PiShieldLoader(
-                    color = amber,
+                    color = accent,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
@@ -123,13 +123,13 @@ fun BlocklistScreen(
             Text(
                 "Live Blocking Activity",
                 style = MaterialTheme.typography.titleMedium,
-                color = amber,
+                color = accent,
                 modifier = Modifier.padding(bottom = 8.dp, top = 8.dp)
             )
         }
 
-        item { BlocklistLineChart(history = history, isDark = isDark, cardBg = cardBg, amberDim = amberDim, amber = amber) }
-        item { LegendRow(mutedText = mutedText, amber = amber) }
+        item { BlocklistLineChart(history = history, isDark = isDark, cardBg = cardBg, accentDim = accentDim, accent = accent) }
+        item { LegendRow(mutedText = mutedText, accent = accent) }
 
         item { Spacer(modifier = Modifier.height(24.dp)) }
 
@@ -145,7 +145,7 @@ fun BlocklistScreen(
                         whitelistInput = ""
                     }
                 },
-                amber = amber,
+                accent = accent,
                 isDark = isDark
             )
         }
@@ -153,7 +153,7 @@ fun BlocklistScreen(
             item { EmptyListText() }
         } else {
             items(state.whitelist, key = { "wl_$it" }) { domain ->
-                DomainRow(domain = domain, onRemove = { viewModel.removeFromWhitelist(domain) }, cardBg = cardBg, amber = amber, amberDim = amberDim)
+                DomainRow(domain = domain, onRemove = { viewModel.removeFromWhitelist(domain) }, cardBg = cardBg, accent = accent, accentDim = accentDim)
             }
         }
 
@@ -171,7 +171,7 @@ fun BlocklistScreen(
                         blacklistInput = ""
                     }
                 },
-                amber = amber,
+                accent = accent,
                 isDark = isDark
             )
         }
@@ -179,7 +179,7 @@ fun BlocklistScreen(
             item { EmptyListText() }
         } else {
             items(state.blacklist, key = { "bl_$it" }) { domain ->
-                DomainRow(domain = domain, onRemove = { viewModel.removeFromBlacklist(domain) }, cardBg = cardBg, amber = amber, amberDim = amberDim)
+                DomainRow(domain = domain, onRemove = { viewModel.removeFromBlacklist(domain) }, cardBg = cardBg, accent = accent, accentDim = accentDim)
             }
         }
 
@@ -194,7 +194,7 @@ fun BlocklistScreen(
                 Text(
                     "Active Blocklists",
                     style = MaterialTheme.typography.titleMedium,
-                    color = amber,
+                    color = accent,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
             }
@@ -205,8 +205,8 @@ fun BlocklistScreen(
                     isToggling = state.toggledCategory == blocklist.category,
                     onToggle = { viewModel.toggleBlocklistCategory(blocklist.category) },
                     cardBg = cardBg,
-                    amber = amber,
-                    amberDim = amberDim,
+                    accent = accent,
+                    accentDim = accentDim,
                     mutedText = mutedText
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -244,7 +244,7 @@ private fun EmptyListText(mutedText: Color = MutedText) {
 }
 
 @Composable
-fun BlocklistLineChart(history: List<BlocklistHistoryPoint>, isDark: Boolean, cardBg: Color, amberDim: Color, amber: Color) {
+fun BlocklistLineChart(history: List<BlocklistHistoryPoint>, isDark: Boolean, cardBg: Color, accentDim: Color, accent: Color) {
     val adsEntries = remember(history) { history.mapIndexed { i, p -> FloatEntry(i.toFloat(), p.adsCount.toFloat()) } }
     val trackingEntries = remember(history) { history.mapIndexed { i, p -> FloatEntry(i.toFloat(), p.trackingCount.toFloat()) } }
     val aiEntries = remember(history) { history.mapIndexed { i, p -> FloatEntry(i.toFloat(), p.aiCount.toFloat()) } }
@@ -263,7 +263,7 @@ fun BlocklistLineChart(history: List<BlocklistHistoryPoint>, isDark: Boolean, ca
             .height(260.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(cardBg)
-            .border(1.dp, amberDim, RoundedCornerShape(8.dp))
+            .border(1.dp, accentDim, RoundedCornerShape(8.dp))
     ) {
         if (history.size < 2) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -276,7 +276,7 @@ fun BlocklistLineChart(history: List<BlocklistHistoryPoint>, isDark: Boolean, ca
                         lines = listOf(
                             lineSpec(lineColor = Color(0xFF3B82F6)), // ads - blue
                             lineSpec(lineColor = Color(0xFF10B981)), // tracking - green
-                            lineSpec(lineColor = amber)  // ai - dynamic
+                            lineSpec(lineColor = accent)  // ai - dynamic
                         )
                     ),
                     chartModelProducer = chartEntryModelProducer,
@@ -297,14 +297,14 @@ fun BlocklistLineChart(history: List<BlocklistHistoryPoint>, isDark: Boolean, ca
 }
 
 @Composable
-fun LegendRow(mutedText: Color, amber: Color) {
+fun LegendRow(mutedText: Color, accent: Color) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         LegendItem(color = Color(0xFF3B82F6), label = "Ads", mutedText = mutedText)
         LegendItem(color = Color(0xFF10B981), label = "Tracking", mutedText = mutedText)
-        LegendItem(color = amber, label = "AI", mutedText = mutedText)
+        LegendItem(color = accent, label = "AI", mutedText = mutedText)
     }
 }
 
@@ -323,8 +323,8 @@ fun BlocklistCard(
     isToggling: Boolean,
     onToggle: () -> Unit,
     cardBg: Color,
-    amber: Color,
-    amberDim: Color,
+    accent: Color,
+    accentDim: Color,
     mutedText: Color
 ) {
     Row(
@@ -332,7 +332,7 @@ fun BlocklistCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .background(cardBg)
-            .border(1.dp, amberDim, RoundedCornerShape(8.dp))
+            .border(1.dp, accentDim, RoundedCornerShape(8.dp))
             .padding(12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -341,7 +341,7 @@ fun BlocklistCard(
             Text(
                 blocklist.category.replaceFirstChar { it.uppercase() },
                 style = MaterialTheme.typography.titleSmall,
-                color = amber
+                color = accent
             )
             Text("${blocklist.count} domains", style = MaterialTheme.typography.bodySmall, color = mutedText)
         }
@@ -351,10 +351,10 @@ fun BlocklistCard(
             enabled = false, // Disabled until backend permission issue is fixed
             modifier = Modifier.width(50.dp),
             colors = SwitchDefaults.colors(
-                checkedThumbColor = amber,
-                checkedTrackColor = amberDim,
-                disabledCheckedThumbColor = amber.copy(alpha = 0.5f),
-                disabledCheckedTrackColor = amberDim.copy(alpha = 0.5f)
+                checkedThumbColor = accent,
+                checkedTrackColor = accentDim,
+                disabledCheckedThumbColor = accent.copy(alpha = 0.5f),
+                disabledCheckedTrackColor = accentDim.copy(alpha = 0.5f)
             )
         )
     }
@@ -366,14 +366,14 @@ private fun DomainListHeader(
     inputText: String,
     onInputChange: (String) -> Unit,
     onAdd: () -> Unit,
-    amber: Color,
+    accent: Color,
     isDark: Boolean
 ) {
     Column {
         Text(
             title,
             style = MaterialTheme.typography.titleMedium,
-            color = amber,
+            color = accent,
             modifier = Modifier.padding(bottom = 8.dp)
         )
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -384,8 +384,8 @@ private fun DomainListHeader(
                 placeholder = { Text("e.g. example.com", color = if (isDark) MutedText else LightColors.TextSecondary) },
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = amber,
-                    unfocusedBorderColor = if (isDark) DarkColors.AmberDim else LightColors.AmberDim,
+                    focusedBorderColor = accent,
+                    unfocusedBorderColor = if (isDark) DarkColors.AccentDim else LightColors.AccentDim,
                     focusedTextColor = if (isDark) Color.White else Color.Black,
                     unfocusedTextColor = if (isDark) Color.White else Color.Black
                 )
@@ -393,7 +393,7 @@ private fun DomainListHeader(
             Spacer(modifier = Modifier.width(8.dp))
             TextButton(
                 onClick = onAdd,
-                colors = ButtonDefaults.textButtonColors(contentColor = amber)
+                colors = ButtonDefaults.textButtonColors(contentColor = accent)
             ) {
                 Text("ADD", fontWeight = FontWeight.Bold)
             }
@@ -403,19 +403,19 @@ private fun DomainListHeader(
 }
 
 @Composable
-private fun DomainRow(domain: String, onRemove: () -> Unit, cardBg: Color, amber: Color, amberDim: Color) {
+private fun DomainRow(domain: String, onRemove: () -> Unit, cardBg: Color, accent: Color, accentDim: Color) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 3.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(cardBg)
-            .border(1.dp, amberDim, RoundedCornerShape(8.dp))
+            .border(1.dp, accentDim, RoundedCornerShape(8.dp))
             .padding(horizontal = 12.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(domain, color = amber, style = MaterialTheme.typography.bodyMedium)
+        Text(domain, color = accent, style = MaterialTheme.typography.bodyMedium)
         IconButton(onClick = onRemove) {
             Icon(Icons.Default.Delete, contentDescription = "Remove", tint = DarkColors.AlertRed)
         }
