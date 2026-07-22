@@ -21,10 +21,6 @@ object DarkColors {
     val GradientStart = Color(0xFF0A0A0A)
     val GradientEnd = Color(0xFF1A1206)
 
-    // Glass card tint + border
-    val GlassFill = Color(0xFF1A1A1A) // used with alpha below
-    val GlassBorder = Color(0xFFFFB000) // used with low alpha for subtle edge
-
     val TextPrimary = Color(0xFFFFB000)
     val TextSecondary = Color(0xFF8A6A2E)
 }
@@ -40,21 +36,9 @@ object LightColors {
     val GradientEnd = Color(0xFFEFE2C4)
 
     val GlassFill = Color(0xFFFFFFFF)
-    val GlassBorder = Color(0xFFB37200)
 
     val TextPrimary = Color(0xFF3A2A00)
     val TextSecondary = Color(0xFF7A6440)
-}
-
-// ---------- GLASS EFFECT VALUES ----------
-object GlassTokens {
-    val CornerRadius = 16.dp
-    val BorderWidth = 1.dp
-    val BlurRadius = 20.dp
-
-    const val FillAlpha = 0.35f      // "little bit transparency"
-    const val BorderAlpha = 0.25f
-    const val ShadowAlpha = 0.15f
 }
 
 // ---------- SPACING ----------
