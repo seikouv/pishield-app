@@ -10,7 +10,7 @@ The Android companion app for [PiShield](https://github.com/seikouv/pishield.git
 |---|---|---|
 | ![Dashboard](docs/media/dashboard.png) | ![Devices](docs/media/devices.png) | ![Threats](docs/media/threats.png) |
 
-| DNS Logs | Blocklists | Settings |
+| readonly blocklists | Blocklists | Settings |
 |---|---|---|
 | ![readonly blocklists](docs/media/activelist.png) | ![Blocklists](docs/media/graphsnewhiteblacklist.png) | ![Settings](docs/media/settings.png) |
 
