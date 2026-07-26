@@ -4,6 +4,20 @@ The Android companion app for [PiShield](https://github.com/seikouv/pishield.git
 
 **Main repo (backend + hardware setup):** [github.com/seikouv/pishield](https://github.com/seikouv/pishield.git)
 
+## Screenshots
+
+| Dashboard | Devices | Threats |
+|---|---|---|
+| ![Dashboard](docs/media/dashboard.png) | ![Devices](docs/media/devices.png) | ![Threats](docs/media/threats.png) |
+
+| DNS Logs | Blocklists | Settings |
+|---|---|---|
+| ![DNS Logs](docs/media/activelist.png) | ![Blocklists](docs/media/graphsnewhiteblacklist.png) | ![Settings](docs/media/settings.png) |
+
+## Demo Video
+
+> 🎥 Demo video coming soon — link will be added here.
+
 ## Screens
 
 - **Dashboard** — live-polling system stats: memory usage, uptime, active connections, threat counts
