@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -90,6 +91,7 @@ fun SettingsScreen(
         modifier = modifier
             .fillMaxSize()
             .background(bg)
+            .statusBarsPadding()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -156,6 +158,7 @@ fun SettingsScreen(
                     isSyncing = false
                 }
             },
+            shape = RoundedCornerShape(4.dp),
             colors = ButtonDefaults.buttonColors(containerColor = accent)
         ) {
             Text(if (isSyncing) "Syncing..." else "Sync with Pi", color = Color.Black)
@@ -201,9 +204,9 @@ private fun InfoCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(4.dp))
             .background(cardBg)
-            .border(1.dp, border, RoundedCornerShape(8.dp))
+            .border(1.dp, border, RoundedCornerShape(4.dp))
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -300,6 +303,7 @@ fun ReactionTapGame(onExit: () -> Unit, isDark: Boolean, accentColor: Color) {
 
             Button(
                 onClick = onExit,
+                shape = RoundedCornerShape(4.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = if (gameState == "TAP") Color.Black else accentColor)
             ) {
                 Text("EXIT GAME", color = if (gameState == "TAP") accentColor else (if (isDark) Color.Black else Color.White))

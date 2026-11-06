@@ -1,5 +1,6 @@
 package com.seikouv.pishield.ui
 
+import android.util.Log
 import com.seikouv.pishield.data.SystemStats
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,20 +21,33 @@ class DashboardViewModel : ViewModel() {
     private val _dashboardState = MutableStateFlow<DashboardState>(DashboardState.Loading)
     val dashboardState: StateFlow<DashboardState> = _dashboardState.asStateFlow()
 
+    private val _isActive = MutableStateFlow(false)
+
     init {
         startLiveRefresh()
+    }
+
+    fun setActive(active: Boolean) {
+        val wasInactive = !_isActive.value
+        _isActive.value = active
+        if (active && wasInactive) {
+            fetchDashboard()
+        }
     }
 
     private fun startLiveRefresh() {
         viewModelScope.launch {
             while (true) {
-                fetchDashboard()
+                if (_isActive.value) {
+                    fetchDashboard()
+                }
                 delay(3000) // Refresh every 3 seconds
             }
         }
     }
 
     fun fetchDashboard() {
+        Log.d("DashboardViewModel", "fetchDashboard() called - isActive: ${_isActive.value}")
         viewModelScope.launch {
             try {
                 val data = RetrofitClient.api.getSystemStats()

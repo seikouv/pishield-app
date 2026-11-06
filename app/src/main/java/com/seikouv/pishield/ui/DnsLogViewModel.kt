@@ -1,5 +1,6 @@
 package com.seikouv.pishield.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.seikouv.pishield.api.RetrofitClient
@@ -30,6 +31,8 @@ class DnsLogViewModel : ViewModel() {
     private val _isConnected = MutableStateFlow(true)
     val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
+    private val _isActive = MutableStateFlow(false)
+
     // Newest-first list, capped so the feed doesn't grow unbounded
     private val seenIds = LinkedHashSet<Long>()
     private val maxEntries = 300
@@ -39,6 +42,14 @@ class DnsLogViewModel : ViewModel() {
 
     init {
         startPolling()
+    }
+
+    fun setActive(active: Boolean) {
+        val wasInactive = !_isActive.value
+        _isActive.value = active
+        if (active && wasInactive) {
+            viewModelScope.launch { fetchOnce() }
+        }
     }
 
     fun setFilter(newFilter: DnsLogFilter) {
@@ -54,13 +65,16 @@ class DnsLogViewModel : ViewModel() {
     private fun startPolling() {
         viewModelScope.launch {
             while (true) {
-                fetchOnce()
+                if (_isActive.value) {
+                    fetchOnce()
+                }
                 delay(pollIntervalMs)
             }
         }
     }
 
     private suspend fun fetchOnce() {
+        Log.d("DnsLogViewModel", "fetchOnce() called - isActive: ${_isActive.value}")
         try {
             val currentFilter = _filter.value
             val blockedParam = when (currentFilter) {

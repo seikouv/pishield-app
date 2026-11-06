@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -28,13 +29,23 @@ import com.seikouv.pishield.ui.theme.DarkColors
 import com.seikouv.pishield.ui.theme.LightColors
 import com.seikouv.pishield.ui.theme.LiveIndicator
 import com.seikouv.pishield.ui.theme.ThemeState
+import kotlinx.coroutines.flow.StateFlow
 
 // Flat colors, no gradient/glass
 private val LogBg = Color.Black
 
 @Composable
-fun DnsLogScreen(modifier: Modifier = Modifier, viewModel: DnsLogViewModel = viewModel()) {
-    val entries by viewModel.entries.collectAsState()
+fun DnsLogScreen(
+    isActive: Boolean,
+    modifier: Modifier = Modifier,
+    viewModel: DnsLogViewModel = viewModel()
+) {
+    LaunchedEffect(isActive) {
+        viewModel.setActive(isActive)
+    }
+
+    if (!isActive) return
+
     val currentFilter by viewModel.filter.collectAsState()
     val isConnected by viewModel.isConnected.collectAsState()
     val isDark by ThemeState.isDark.collectAsState()
@@ -43,20 +54,14 @@ fun DnsLogScreen(modifier: Modifier = Modifier, viewModel: DnsLogViewModel = vie
     val bg = if (isDark) DarkColors.TerminalBg else LightColors.TerminalBg
     val accent = accentColor
     val accentDim = accentColor.copy(alpha = 0.6f)
-    val logBg = if (isDark) Color.Black else LightColors.GlassFill
 
     val listState = rememberLazyListState()
-
-    LaunchedEffect(entries.size) {
-        if (entries.isNotEmpty()) {
-            listState.animateScrollToItem(0)
-        }
-    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(bg)
+            .statusBarsPadding()
     ) {
         Row(
             modifier = Modifier
@@ -96,45 +101,67 @@ fun DnsLogScreen(modifier: Modifier = Modifier, viewModel: DnsLogViewModel = vie
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 12.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(logBg)
-                .border(1.dp, accentDim, RoundedCornerShape(8.dp))
-                .padding(12.dp)
-        ) {
-            if (entries.isEmpty()) {
-                Text(
-                    text = if (isConnected) "waiting for traffic..." else "connection lost. retrying...",
-                    color = accentDim,
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 13.sp,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else {
-                LazyColumn(
-                    state = listState,
-                    reverseLayout = true,
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    items(entries, key = { it.id }) { entry ->
-                        TerminalLogLine(entry, accent, accentDim)
-                    }
-                }
-            }
-        }
+        LogListContent(
+            entriesFlow = viewModel.entries,
+            isConnected = isConnected,
+            listState = listState,
+            accent = accent,
+            accentDim = accentDim
+        )
 
         Spacer(modifier = Modifier.height(12.dp))
     }
 }
 
 @Composable
+private fun LogListContent(
+    entriesFlow: StateFlow<List<DnsLogEntry>>,
+    isConnected: Boolean,
+    listState: LazyListState,
+    accent: Color,
+    accentDim: Color
+) {
+    val entries by entriesFlow.collectAsState()
+
+    LaunchedEffect(entries.size) {
+        if (entries.isNotEmpty()) {
+            listState.animateScrollToItem(0)
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 12.dp)
+            .clip(RoundedCornerShape(4.dp))
+            .background(Color.Black)
+            .border(1.dp, accentDim, RoundedCornerShape(4.dp))
+            .padding(12.dp)
+    ) {
+        if (entries.isEmpty()) {
+            Text(
+                text = if (isConnected) "waiting for traffic..." else "connection lost. retrying...",
+                color = accentDim,
+                fontFamily = FontFamily.Monospace,
+                fontSize = 13.sp,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        } else {
+            LazyColumn(
+                state = listState,
+                reverseLayout = true,
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                items(entries, key = { it.id }) { entry ->
+                    TerminalLogLine(entry, accent, accentDim)
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun TerminalLogLine(entry: DnsLogEntry, accent: Color, accentDim: Color) {
-    // No per-row fade/expand animation - just render immediately.
-    // With up to 300 live-updating entries, animating each new row was
-    // the main source of lag.
     val timeLabel = remember(entry.timestamp) {
         entry.timestamp.substringAfterLast(" ")
     }
@@ -145,31 +172,45 @@ private fun TerminalLogLine(entry: DnsLogEntry, accent: Color, accentDim: Color)
         "allowed"
     }
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Top
+    val allowedColor = Color(0xFF4ADE80).copy(alpha = 0.7f)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp)
     ) {
-        Text(
-            text = "[$timeLabel]",
-            color = accentDim,
-            fontFamily = FontFamily.Monospace,
-            fontSize = 12.sp
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = entry.domain,
-            color = if (entry.blocked) accent else accentDim,
-            fontFamily = FontFamily.Monospace,
-            fontSize = 12.sp,
-            modifier = Modifier.weight(1f)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = statusText,
-            color = if (entry.blocked) DarkColors.AlertRed else accentDim,
-            fontFamily = FontFamily.Monospace,
-            fontSize = 12.sp,
-            fontWeight = if (entry.blocked) FontWeight.Bold else FontWeight.Normal
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top
+        ) {
+            Text(
+                text = "[$timeLabel]",
+                color = accentDim,
+                fontFamily = FontFamily.Monospace,
+                fontSize = 11.sp
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = entry.domain,
+                color = if (entry.blocked) accent else accentDim,
+                fontFamily = FontFamily.Monospace,
+                fontSize = 11.sp,
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = statusText,
+                color = if (entry.blocked) DarkColors.AlertRed else allowedColor,
+                fontFamily = FontFamily.Monospace,
+                fontSize = 11.sp,
+                fontWeight = if (entry.blocked) FontWeight.Bold else FontWeight.Normal
+            )
+        }
+        Spacer(modifier = Modifier.height(2.dp))
+        HorizontalDivider(
+            modifier = Modifier.fillMaxWidth(),
+            thickness = 1.dp,
+            color = Color.White.copy(alpha = 0.05f)
         )
     }
 }
@@ -178,7 +219,7 @@ private fun TerminalLogLine(entry: DnsLogEntry, accent: Color, accentDim: Color)
 private fun FilterChipItem(label: String, selected: Boolean, onClick: () -> Unit, accent: Color, accentDim: Color, isDark: Boolean) {
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(6.dp))
+            .clip(RoundedCornerShape(4.dp))
             .background(if (selected) accent else (if (isDark) Color(0xFF0F1E3D) else Color(0xFFE5E7EB)))
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 6.dp)

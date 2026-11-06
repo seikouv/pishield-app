@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -22,6 +23,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.seikouv.pishield.Validators
 import com.seikouv.pishield.api.TokenManager
 import com.seikouv.pishield.ui.theme.DarkColors
 
@@ -64,11 +66,14 @@ fun TokenEntryScreen(onTokenSaved: () -> Unit) {
             onClick = {
                 if (tokenInput.isBlank()) {
                     error = "Token cannot be empty"
+                } else if (!Validators.isValidToken(tokenInput)) {
+                    error = "Invalid token format or length"
                 } else {
                     TokenManager.saveToken(context, tokenInput)
                     onTokenSaved()
                 }
             },
+            shape = RoundedCornerShape(4.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp)

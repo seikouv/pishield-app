@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -56,12 +57,14 @@ import com.patrykandpatrick.vico.core.entry.FloatEntry
 import com.seikouv.pishield.BlocklistViewModel
 import com.seikouv.pishield.data.BlocklistHistoryPoint
 import com.seikouv.pishield.ui.components.PiShieldLoader
+import com.seikouv.pishield.ui.components.PiShieldSwitch
 import com.seikouv.pishield.ui.theme.DarkColors
 import com.seikouv.pishield.ui.theme.LightColors
 import com.seikouv.pishield.ui.theme.ThemeState
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.flow.StateFlow
 
 // Flat blue palette, no alpha/blur/shadow
 private val CardBg = Color(0xFF0F1E3D)
@@ -71,11 +74,17 @@ private val MutedText = Color(0xFF9CA3AF)
 
 @Composable
 fun BlocklistScreen(
+    isActive: Boolean,
     modifier: Modifier = Modifier,
     viewModel: BlocklistViewModel = viewModel()
 ) {
+    LaunchedEffect(isActive) {
+        viewModel.setActive(isActive)
+    }
+
+    if (!isActive) return
+
     val state by viewModel.uiState.collectAsState()
-    val history by viewModel.history.collectAsState()
     val isDark by ThemeState.isDark.collectAsState()
     val accentColor by ThemeState.accentColor.collectAsState()
 
@@ -92,6 +101,7 @@ fun BlocklistScreen(
         modifier = modifier
             .fillMaxSize()
             .background(bg)
+            .statusBarsPadding()
             .padding(horizontal = 16.dp),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp)
     ) {
@@ -128,7 +138,7 @@ fun BlocklistScreen(
             )
         }
 
-        item { BlocklistLineChart(history = history, isDark = isDark, cardBg = cardBg, accentDim = accentDim, accent = accent) }
+        item { BlocklistLineChart(historyFlow = viewModel.history, isDark = isDark, cardBg = cardBg, accentDim = accentDim, accent = accent) }
         item { LegendRow(mutedText = mutedText, accent = accent) }
 
         item { Spacer(modifier = Modifier.height(24.dp)) }
@@ -146,14 +156,22 @@ fun BlocklistScreen(
                     }
                 },
                 accent = accent,
-                isDark = isDark
+                isDark = isDark,
+                isActionInProgress = state.isListActionInProgress
             )
         }
         if (state.whitelist.isEmpty()) {
             item { EmptyListText() }
         } else {
             items(state.whitelist, key = { "wl_$it" }) { domain ->
-                DomainRow(domain = domain, onRemove = { viewModel.removeFromWhitelist(domain) }, cardBg = cardBg, accent = accent, accentDim = accentDim)
+                DomainRow(
+                    domain = domain,
+                    onRemove = { viewModel.removeFromWhitelist(domain) },
+                    cardBg = cardBg,
+                    accent = accent,
+                    accentDim = accentDim,
+                    isActionInProgress = state.isListActionInProgress
+                )
             }
         }
 
@@ -172,14 +190,22 @@ fun BlocklistScreen(
                     }
                 },
                 accent = accent,
-                isDark = isDark
+                isDark = isDark,
+                isActionInProgress = state.isListActionInProgress
             )
         }
         if (state.blacklist.isEmpty()) {
             item { EmptyListText() }
         } else {
             items(state.blacklist, key = { "bl_$it" }) { domain ->
-                DomainRow(domain = domain, onRemove = { viewModel.removeFromBlacklist(domain) }, cardBg = cardBg, accent = accent, accentDim = accentDim)
+                DomainRow(
+                    domain = domain,
+                    onRemove = { viewModel.removeFromBlacklist(domain) },
+                    cardBg = cardBg,
+                    accent = accent,
+                    accentDim = accentDim,
+                    isActionInProgress = state.isListActionInProgress
+                )
             }
         }
 
@@ -225,7 +251,7 @@ private fun ErrorBanner(message: String, topPadding: Boolean = false) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = if (topPadding) 8.dp else 0.dp, bottom = if (topPadding) 0.dp else 16.dp)
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(4.dp))
             .background(ErrorBg)
             .padding(12.dp)
     ) {
@@ -244,10 +270,20 @@ private fun EmptyListText(mutedText: Color = MutedText) {
 }
 
 @Composable
-fun BlocklistLineChart(history: List<BlocklistHistoryPoint>, isDark: Boolean, cardBg: Color, accentDim: Color, accent: Color) {
-    val adsEntries = remember(history) { history.mapIndexed { i, p -> FloatEntry(i.toFloat(), p.adsCount.toFloat()) } }
-    val trackingEntries = remember(history) { history.mapIndexed { i, p -> FloatEntry(i.toFloat(), p.trackingCount.toFloat()) } }
-    val aiEntries = remember(history) { history.mapIndexed { i, p -> FloatEntry(i.toFloat(), p.aiCount.toFloat()) } }
+fun BlocklistLineChart(historyFlow: StateFlow<List<BlocklistHistoryPoint>>, isDark: Boolean, cardBg: Color, accentDim: Color, accent: Color) {
+    val history by historyFlow.collectAsState()
+    val adsEntries = remember(history) {
+        if (history.size >= 2) history.mapIndexed { i, p -> FloatEntry(i.toFloat(), p.adsCount.toFloat()) }
+        else emptyList()
+    }
+    val trackingEntries = remember(history) {
+        if (history.size >= 2) history.mapIndexed { i, p -> FloatEntry(i.toFloat(), p.trackingCount.toFloat()) }
+        else emptyList()
+    }
+    val aiEntries = remember(history) {
+        if (history.size >= 2) history.mapIndexed { i, p -> FloatEntry(i.toFloat(), p.aiCount.toFloat()) }
+        else emptyList()
+    }
 
     val chartEntryModelProducer = remember { ChartEntryModelProducer() }
 
@@ -261,9 +297,9 @@ fun BlocklistLineChart(history: List<BlocklistHistoryPoint>, isDark: Boolean, ca
         modifier = Modifier
             .fillMaxWidth()
             .height(260.dp)
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(4.dp))
             .background(cardBg)
-            .border(1.dp, accentDim, RoundedCornerShape(8.dp))
+            .border(1.dp, accentDim, RoundedCornerShape(4.dp))
     ) {
         if (history.size < 2) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -330,9 +366,9 @@ fun BlocklistCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(4.dp))
             .background(cardBg)
-            .border(1.dp, accentDim, RoundedCornerShape(8.dp))
+            .border(1.dp, accentDim, RoundedCornerShape(4.dp))
             .padding(12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -345,18 +381,16 @@ fun BlocklistCard(
             )
             Text("${blocklist.count} domains", style = MaterialTheme.typography.bodySmall, color = mutedText)
         }
-        Switch(
-            checked = blocklist.enabled,
-            onCheckedChange = { onToggle() },
-            enabled = false, // Disabled until backend permission issue is fixed
-            modifier = Modifier.width(50.dp),
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = accent,
-                checkedTrackColor = accentDim,
-                disabledCheckedThumbColor = accent.copy(alpha = 0.5f),
-                disabledCheckedTrackColor = accentDim.copy(alpha = 0.5f)
+        if (isToggling) {
+            PiShieldLoader(color = accent)
+        } else {
+            PiShieldSwitch(
+                checked = blocklist.enabled,
+                onCheckedChange = { onToggle() },
+                enabled = false, // Disabled until backend permission issue is fixed
+                accentColor = accent
             )
-        )
+        }
     }
 }
 
@@ -367,7 +401,8 @@ private fun DomainListHeader(
     onInputChange: (String) -> Unit,
     onAdd: () -> Unit,
     accent: Color,
-    isDark: Boolean
+    isDark: Boolean,
+    isActionInProgress: Boolean
 ) {
     Column {
         Text(
@@ -383,19 +418,27 @@ private fun DomainListHeader(
                 modifier = Modifier.weight(1f),
                 placeholder = { Text("e.g. example.com", color = if (isDark) MutedText else LightColors.TextSecondary) },
                 singleLine = true,
+                enabled = !isActionInProgress,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = accent,
                     unfocusedBorderColor = if (isDark) DarkColors.AccentDim else LightColors.AccentDim,
                     focusedTextColor = if (isDark) Color.White else Color.Black,
-                    unfocusedTextColor = if (isDark) Color.White else Color.Black
+                    unfocusedTextColor = if (isDark) Color.White else Color.Black,
+                    disabledBorderColor = (if (isDark) DarkColors.AccentDim else LightColors.AccentDim).copy(alpha = 0.5f)
                 )
             )
             Spacer(modifier = Modifier.width(8.dp))
+            val btnColor = if (!isActionInProgress && inputText.isNotBlank()) accent else accent.copy(alpha = 0.3f)
             TextButton(
                 onClick = onAdd,
-                colors = ButtonDefaults.textButtonColors(contentColor = accent)
+                enabled = !isActionInProgress && inputText.isNotBlank(),
+                colors = ButtonDefaults.textButtonColors(contentColor = accent),
+                shape = RoundedCornerShape(4.dp),
+                modifier = Modifier
+                    .border(1.dp, btnColor, RoundedCornerShape(4.dp))
+                    .padding(horizontal = 4.dp)
             ) {
-                Text("ADD", fontWeight = FontWeight.Bold)
+                Text("ADD", fontWeight = FontWeight.Bold, color = if (isActionInProgress) accent.copy(alpha = 0.3f) else accent)
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -403,21 +446,25 @@ private fun DomainListHeader(
 }
 
 @Composable
-private fun DomainRow(domain: String, onRemove: () -> Unit, cardBg: Color, accent: Color, accentDim: Color) {
+private fun DomainRow(domain: String, onRemove: () -> Unit, cardBg: Color, accent: Color, accentDim: Color, isActionInProgress: Boolean) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 3.dp)
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(4.dp))
             .background(cardBg)
-            .border(1.dp, accentDim, RoundedCornerShape(8.dp))
+            .border(1.dp, accentDim, RoundedCornerShape(4.dp))
             .padding(horizontal = 12.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(domain, color = accent, style = MaterialTheme.typography.bodyMedium)
-        IconButton(onClick = onRemove) {
-            Icon(Icons.Default.Delete, contentDescription = "Remove", tint = DarkColors.AlertRed)
+        IconButton(onClick = onRemove, enabled = !isActionInProgress) {
+            Icon(
+                Icons.Default.Delete,
+                contentDescription = "Remove",
+                tint = if (isActionInProgress) DarkColors.AlertRed.copy(alpha = 0.3f) else DarkColors.AlertRed
+            )
         }
     }
 }

@@ -1,7 +1,9 @@
 package com.seikouv.pishield
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.seikouv.pishield.Validators
 import com.seikouv.pishield.api.RetrofitClient
 import com.seikouv.pishield.data.Blocklist
 import com.seikouv.pishield.data.BlocklistHistoryPoint
@@ -35,12 +37,21 @@ class BlocklistViewModel : ViewModel() {
 
     private val maxHistoryPoints = 15
     private var pollingStarted = false
+    private val _isActive = MutableStateFlow(false)
 
     init {
-        fetchBlocklists()
         startStatsPolling()
-        fetchWhitelist()
-        fetchBlacklist()
+    }
+
+    fun setActive(active: Boolean) {
+        val wasInactive = !_isActive.value
+        _isActive.value = active
+        if (active && wasInactive) {
+            fetchBlocklists()
+            fetchWhitelist()
+            fetchBlacklist()
+            viewModelScope.launch { fetchStatsOnce() }
+        }
     }
 
     fun fetchBlocklists() {
@@ -67,30 +78,37 @@ class BlocklistViewModel : ViewModel() {
 
         viewModelScope.launch {
             while (true) {
-                try {
-                    val stats = api.getBlocklistStats(windowSeconds = 10)
-                    val newPoint = BlocklistHistoryPoint(
-                        timestamp = System.currentTimeMillis(),
-                        adsCount = stats.ads,
-                        trackingCount = stats.tracking,
-                        aiCount = stats.ai
-                    )
-                    _history.value = (_history.value + newPoint).takeLast(maxHistoryPoints)
-
-                    // Only clear a stale error here, don't touch anything else
-                    // in uiState so this poll can't trigger a full-screen recompose.
-                    if (_uiState.value.error != null) {
-                        _uiState.value = _uiState.value.copy(error = null)
-                    }
-                } catch (e: Exception) {
-                    // Don't wipe existing history/graph on a transient failure,
-                    // just surface the error.
-                    _uiState.value = _uiState.value.copy(
-                        error = "Failed to refresh stats: ${e.message}"
-                    )
+                if (_isActive.value) {
+                    fetchStatsOnce()
                 }
                 delay(5000)
             }
+        }
+    }
+
+    private suspend fun fetchStatsOnce() {
+        Log.d("BlocklistViewModel", "fetchStatsOnce() called - isActive: ${_isActive.value}")
+        try {
+            val stats = api.getBlocklistStats(windowSeconds = 10)
+            val newPoint = BlocklistHistoryPoint(
+                timestamp = System.currentTimeMillis(),
+                adsCount = stats.ads,
+                trackingCount = stats.tracking,
+                aiCount = stats.ai
+            )
+            _history.value = (_history.value + newPoint).takeLast(maxHistoryPoints)
+
+            // Only clear a stale error here, don't touch anything else
+            // in uiState so this poll can't trigger a full-screen recompose.
+            if (_uiState.value.error != null) {
+                _uiState.value = _uiState.value.copy(error = null)
+            }
+        } catch (e: Exception) {
+            // Don't wipe existing history/graph on a transient failure,
+            // just surface the error.
+            _uiState.value = _uiState.value.copy(
+                error = "Failed to refresh stats: ${e.message}"
+            )
         }
     }
 
@@ -132,6 +150,10 @@ class BlocklistViewModel : ViewModel() {
     }
 
     fun addToWhitelist(domain: String) {
+        if (!Validators.isValidDomain(domain)) {
+            _uiState.value = _uiState.value.copy(listActionError = "Invalid domain syntax: $domain")
+            return
+        }
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isListActionInProgress = true, listActionError = null)
             try {
@@ -160,6 +182,10 @@ class BlocklistViewModel : ViewModel() {
     }
 
     fun addToBlacklist(domain: String) {
+        if (!Validators.isValidDomain(domain)) {
+            _uiState.value = _uiState.value.copy(listActionError = "Invalid domain syntax: $domain")
+            return
+        }
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isListActionInProgress = true, listActionError = null)
             try {

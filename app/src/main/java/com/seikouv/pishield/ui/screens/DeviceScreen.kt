@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +44,7 @@ import com.seikouv.pishield.data.Device
 import com.seikouv.pishield.ui.DeviceState
 import com.seikouv.pishield.ui.DeviceViewModel
 import com.seikouv.pishield.ui.components.PiShieldLoader
+import com.seikouv.pishield.ui.components.ShimmerBox
 import com.seikouv.pishield.ui.theme.DarkColors
 import com.seikouv.pishield.ui.theme.LightColors
 import com.seikouv.pishield.ui.theme.LiveIndicator
@@ -65,6 +69,7 @@ fun DeviceScreen(viewModel: DeviceViewModel = viewModel(), modifier: Modifier = 
         modifier = modifier
             .fillMaxSize()
             .background(bg)
+            .statusBarsPadding()
     ) {
         Row(
             modifier = Modifier
@@ -91,12 +96,25 @@ fun DeviceScreen(viewModel: DeviceViewModel = viewModel(), modifier: Modifier = 
 
         when (state) {
             is DeviceState.Loading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    PiShieldLoader(color = accent)
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    repeat(4) {
+                        ShimmerBox(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(160.dp)
+                        )
+                    }
                 }
             }
             is DeviceState.Success -> {
-                val activeDevices = state.devices.filter { it.lastSeen >= cutoffTimestamp(state.devices) }
+                val activeDevices = remember(state.devices) {
+                    state.devices.filter { it.lastSeen >= cutoffTimestamp(state.devices) }
+                }
 
                 if (activeDevices.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -147,9 +165,9 @@ fun DeviceCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(4.dp))
             .background(cardBg)
-            .border(1.dp, accentDim, RoundedCornerShape(8.dp))
+            .border(1.dp, accentDim, RoundedCornerShape(4.dp))
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
@@ -170,6 +188,7 @@ fun DeviceCard(
                 Button(
                     onClick = onUnblock,
                     modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(4.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = accent)
                 ) {
                     Icon(Icons.Default.CheckCircle, contentDescription = null, tint = if (isDark) Color.Black else Color.White, modifier = Modifier.size(16.dp))
@@ -180,6 +199,7 @@ fun DeviceCard(
                 Button(
                     onClick = onBlock,
                     modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(4.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkColors.AlertRed)
                 ) {
                     Icon(Icons.Default.Block, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))

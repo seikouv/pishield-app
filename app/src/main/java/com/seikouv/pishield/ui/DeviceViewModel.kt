@@ -2,6 +2,7 @@ package com.seikouv.pishield.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.seikouv.pishield.Validators
 import com.seikouv.pishield.api.RetrofitClient
 import com.seikouv.pishield.data.Device
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,6 +37,10 @@ class DeviceViewModel : ViewModel() {
     }
 
     fun blockDevice(deviceId: String) {
+        if (!Validators.isValidMac(deviceId)) {
+            _deviceState.value = DeviceState.Error("Invalid MAC address: $deviceId")
+            return
+        }
         viewModelScope.launch {
             try {
                 val response = RetrofitClient.api.blockDevice(deviceId)
@@ -49,6 +54,10 @@ class DeviceViewModel : ViewModel() {
     }
 
     fun unblockDevice(deviceId: String) {
+        if (!Validators.isValidMac(deviceId)) {
+            _deviceState.value = DeviceState.Error("Invalid MAC address: $deviceId")
+            return
+        }
         viewModelScope.launch {
             try {
                 val response = RetrofitClient.api.unblockDevice(deviceId)

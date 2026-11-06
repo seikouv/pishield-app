@@ -12,16 +12,16 @@ import androidx.compose.ui.unit.sp
 
 // ---------- DARK THEME (blue terminal, default) ----------
 object DarkColors {
-    val TerminalBg = Color(0xFF0A1226)
-    val AccentBright = Color(0xFF4FA8E8)
+    val TerminalBg = Color(0xFF060D1A)
+    val AccentBright = Color(0xFF38BDF8)
     val AccentDim = Color(0xFF2E6FA3)
     val AlertRed = Color(0xFFFF4500)
 
     // Gradient background (subtle blue-tinted dark gradient)
-    val GradientStart = Color(0xFF0A1226)
+    val GradientStart = Color(0xFF060D1A)
     val GradientEnd = Color(0xFF0F1E3D)
 
-    val TextPrimary = Color(0xFF4FA8E8)
+    val TextPrimary = Color(0xFF38BDF8)
     val TextSecondary = Color(0xFF6B8CAE)
 }
 

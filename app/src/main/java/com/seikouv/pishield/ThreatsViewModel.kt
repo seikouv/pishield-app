@@ -13,7 +13,8 @@ data class ThreatsUiState(
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val error: String? = null,
-    val deletingId: Int? = null
+    val deletingId: Int? = null,
+    val isClearingAll: Boolean = false
 )
 
 class ThreatsViewModel : ViewModel() {
@@ -69,6 +70,7 @@ class ThreatsViewModel : ViewModel() {
 
     fun clearAllThreats() {
         viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isClearingAll = true, error = null)
             try {
                 api.clearAllThreats()
                 _uiState.value = _uiState.value.copy(threats = emptyList())
@@ -76,6 +78,8 @@ class ThreatsViewModel : ViewModel() {
                 _uiState.value = _uiState.value.copy(
                     error = "Failed to clear threats: ${e.message}"
                 )
+            } finally {
+                _uiState.value = _uiState.value.copy(isClearingAll = false)
             }
         }
     }

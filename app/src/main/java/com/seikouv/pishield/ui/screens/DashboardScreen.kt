@@ -3,11 +3,14 @@ package com.seikouv.pishield.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -22,27 +25,41 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.seikouv.pishield.ui.DashboardViewModel
 import com.seikouv.pishield.ui.DashboardState
 import com.seikouv.pishield.ui.components.PiShieldLoader
+import com.seikouv.pishield.ui.components.ShimmerBox
 import com.seikouv.pishield.ui.theme.DarkColors
 import com.seikouv.pishield.ui.theme.LightColors
 import com.seikouv.pishield.ui.theme.LiveIndicator
 import com.seikouv.pishield.ui.theme.ThemeState
 
-private val CardBg = Color(0xFF0F1E3D)
+private val CardBg = Color(0xFF0A1225)
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun DashboardScreen(viewModel: DashboardViewModel = viewModel(), modifier: Modifier = Modifier) {
+fun DashboardScreen(
+    isActive: Boolean,
+    viewModel: DashboardViewModel = viewModel(),
+    modifier: Modifier = Modifier
+) {
+    LaunchedEffect(isActive) {
+        viewModel.setActive(isActive)
+    }
+
+    if (!isActive) return
+
     val state = viewModel.dashboardState.collectAsState().value
     val isDark by ThemeState.isDark.collectAsState()
     val accentColor by ThemeState.accentColor.collectAsState()
 
     val bg = if (isDark) DarkColors.TerminalBg else LightColors.TerminalBg
     val accent = accentColor
-    val accentDim = accentColor.copy(alpha = 0.6f)
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(bg)
+            .statusBarsPadding()
+            .verticalScroll(scrollState)
     ) {
         // Header
         Row(
@@ -70,20 +87,38 @@ fun DashboardScreen(viewModel: DashboardViewModel = viewModel(), modifier: Modif
 
         when (state) {
             is DashboardState.Loading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    PiShieldLoader(color = accent)
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    maxItemsInEachRow = 2
+                ) {
+                    repeat(5) {
+                        ShimmerBox(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(90.dp)
+                        )
+                    }
                 }
             }
             is DashboardState.Success -> {
-                Column(
+                FlowRow(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
                         .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    maxItemsInEachRow = 2
                 ) {
+                    val itemModifier = Modifier.weight(1f)
+                    
                     StatCard(
                         title = "Active Threats",
                         value = state.data.threat_count.toString(),
+                        modifier = itemModifier,
                         isAlert = state.data.threat_count > 0,
                         isDark = isDark,
                         accentColor = accentColor
@@ -91,21 +126,28 @@ fun DashboardScreen(viewModel: DashboardViewModel = viewModel(), modifier: Modif
                     StatCard(
                         title = "Threats (24h)",
                         value = state.data.threat_count_24h.toString(),
-                        isDark = isDark
+                        modifier = itemModifier,
+                        isDark = isDark,
+                        accentColor = accentColor
                     )
                     StatCard(
                         title = "Memory Usage",
                         value = "%.1f%%".format(state.data.memory_percent),
-                        isDark = isDark
+                        modifier = itemModifier,
+                        isDark = isDark,
+                        accentColor = accentColor
                     )
                     StatCard(
                         title = "Active Connections",
                         value = state.data.active_connections.toString(),
-                        isDark = isDark
+                        modifier = itemModifier,
+                        isDark = isDark,
+                        accentColor = accentColor
                     )
                     StatCard(
                         title = "Uptime",
                         value = formatUptime(state.data.uptime_seconds),
+                        modifier = itemModifier,
                         isDark = isDark,
                         accentColor = accentColor
                     )
@@ -121,17 +163,16 @@ fun DashboardScreen(viewModel: DashboardViewModel = viewModel(), modifier: Modif
 }
 
 @Composable
-fun StatCard(title: String, value: String, isAlert: Boolean = false, isDark: Boolean = true, accentColor: Color = DarkColors.AccentBright) {
+fun StatCard(title: String, value: String, modifier: Modifier = Modifier, isAlert: Boolean = false, isDark: Boolean = true, accentColor: Color = DarkColors.AccentBright) {
     val accent = if (isAlert) DarkColors.AlertRed else accentColor
     val cardBg = if (isDark) CardBg else LightColors.GlassFill
     val border = accentColor.copy(alpha = 0.4f)
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+        modifier = modifier
+            .clip(RoundedCornerShape(4.dp))
             .background(cardBg)
-            .border(1.dp, border, RoundedCornerShape(8.dp))
+            .border(1.dp, border, RoundedCornerShape(4.dp))
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {

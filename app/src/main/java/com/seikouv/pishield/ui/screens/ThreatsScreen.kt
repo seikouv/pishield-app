@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +29,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +44,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.seikouv.pishield.ThreatsViewModel
 import com.seikouv.pishield.data.Threat
 import com.seikouv.pishield.ui.components.PiShieldLoader
+import com.seikouv.pishield.ui.components.ShimmerBox
 import com.seikouv.pishield.ui.theme.DarkColors
 import com.seikouv.pishield.ui.theme.LightColors
 import com.seikouv.pishield.ui.theme.LiveIndicator
@@ -65,10 +71,56 @@ fun ThreatsScreen(
     val accentDim = accentColor.copy(alpha = 0.6f)
     val cardBg = if (isDark) CardBg else LightColors.GlassFill
 
+    var showClearConfirmDialog by remember { mutableStateOf(false) }
+
+    if (showClearConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearConfirmDialog = false },
+            title = {
+                Text(
+                    "Clear all threats?",
+                    color = accent,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    "This will permanently delete all recorded threats. This action cannot be undone.",
+                    color = if (isDark) Color.White else Color.Black
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.clearAllThreats()
+                        showClearConfirmDialog = false
+                    },
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier.border(1.dp, DarkColors.AlertRed, RoundedCornerShape(4.dp)).padding(horizontal = 4.dp)
+                ) {
+                    Text("Clear", color = DarkColors.AlertRed, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showClearConfirmDialog = false },
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier.border(1.dp, accentDim, RoundedCornerShape(4.dp)).padding(horizontal = 4.dp)
+                ) {
+                    Text("Cancel", color = accentDim)
+                }
+            },
+            containerColor = cardBg,
+            shape = RoundedCornerShape(4.dp),
+            modifier = Modifier.border(1.dp, accentDim, RoundedCornerShape(4.dp))
+        )
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(bg)
+            .statusBarsPadding()
     ) {
         // Header row: title + live indicator + refresh + clear all
         Row(
@@ -92,8 +144,14 @@ fun ThreatsScreen(
                     Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = accent)
                 }
                 if (state.threats.isNotEmpty()) {
-                    TextButton(onClick = { viewModel.clearAllThreats() }) {
-                        Text("Clear All", color = accentDim)
+                    val clearBtnColor = if (state.isClearingAll) accentDim.copy(alpha = 0.3f) else accentDim
+                    TextButton(
+                        onClick = { showClearConfirmDialog = true },
+                        enabled = !state.isClearingAll,
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.border(1.dp, clearBtnColor, RoundedCornerShape(4.dp)).padding(horizontal = 4.dp)
+                    ) {
+                        Text("Clear All", color = clearBtnColor)
                     }
                 }
             }
@@ -105,7 +163,7 @@ fun ThreatsScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 12.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(4.dp))
                     .background(ErrorBg)
                     .padding(12.dp)
             ) {
@@ -116,11 +174,18 @@ fun ThreatsScreen(
         when {
             state.isLoading -> {
                 Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    PiShieldLoader(color = accent)
+                    repeat(5) {
+                        ShimmerBox(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(110.dp)
+                        )
+                    }
                 }
             }
             state.threats.isEmpty() -> {
@@ -171,9 +236,9 @@ fun ThreatCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(4.dp))
             .background(cardBg)
-            .border(1.dp, accentDim, RoundedCornerShape(8.dp))
+            .border(1.dp, accentDim, RoundedCornerShape(4.dp))
             .padding(12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
